@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.naturecode.langchain.dto.AIRequest;
 import com.naturecode.langchain.service.AIAssistant;
 
+import reactor.core.publisher.Mono;
+
 @RestController
 @RequestMapping("/ai")
 public class AIController {
@@ -19,7 +21,7 @@ public class AIController {
   }
 
   @PostMapping("/ask")
-  public String ask(@RequestBody AIRequest request) {
+  public Mono<String> ask(@RequestBody AIRequest request) {
     return assistant.ask(request.getUserId(), request.getQuestion());
   }
 }

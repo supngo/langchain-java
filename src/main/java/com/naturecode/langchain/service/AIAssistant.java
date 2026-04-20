@@ -9,6 +9,8 @@ import com.naturecode.langchain.tool.ClaimService;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.service.AiServices;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 public class AIAssistant {
@@ -29,14 +31,18 @@ public class AIAssistant {
     this.memoryStore = memoryStore;
   }
 
-  public String ask(String userId, String question) {
-    Assistant assistant = AiServices.builder(Assistant.class)
-        .chatModel(model)
-        .contentRetriever(retriever)
-        .tools(claimTool)
-        .chatMemory(memoryStore.getMemory(userId)) // ✅ per user
-        .build();
+  public Mono<String> ask(String userId, String question) {
+    return Mono.fromCallable(() -> {
 
-    return assistant.chat(question);
+      Assistant assistant = AiServices.builder(Assistant.class)
+          .chatModel(model)
+          .contentRetriever(retriever)
+          .tools(claimTool)
+          .chatMemory(memoryStore.getMemory(userId))
+          .build();
+
+      return assistant.chat(question);
+
+    }).subscribeOn(Schedulers.boundedElastic()); // ✅ offload blocking work
   }
 }

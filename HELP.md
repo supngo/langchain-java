@@ -1,5 +1,23 @@
 # Getting Started
 
+### Running Redis (required for caching)
+
+This app uses Redis for caching claim lookups and RAG retrieval results. Start it via Docker before running the app:
+
+```bash
+docker run -d -p 6379:6379 --name langchain-redis redis
+```
+
+To stop it:
+```bash
+docker stop langchain-redis
+```
+
+To restart it later:
+```bash
+docker start langchain-redis
+```
+
 ### Reference Documentation
 For further reference, please consider the following sections:
 
