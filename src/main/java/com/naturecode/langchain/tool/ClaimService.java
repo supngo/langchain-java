@@ -14,7 +14,11 @@ public class ClaimService {
   private final WebClient webClient;
 
   public ClaimService() {
-    this.webClient = WebClient.builder().baseUrl("http://localhost:8081").build();
+    this("http://localhost:8081");
+  }
+
+  ClaimService(String baseUrl) {
+    this.webClient = WebClient.builder().baseUrl(baseUrl).build();
   }
 
   @Tool("Get claim status for a claim ID")

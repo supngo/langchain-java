@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 }
 
 group = 'com.naturecode'
@@ -34,14 +35,41 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webservices'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webservices-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testCompileOnly 'org.projectlombok:lombok'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacoco {
+	toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+	}
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, excludes: [
+				'**/config/**',
+				'**/dto/**',
+				'**/agent/**',
+				'**/service/AIAssistant.class',
+				'**/rag/KnowledgeBase.class',
+				'**/memory/MemoryStore.class',
+				'**/rag/RetrieverConfig.class',
+				'**/LangchainApplication.class'
+			])
+		}))
+	}
 }
