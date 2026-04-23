@@ -6,7 +6,9 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class KnowledgeBase {
   private final InMemoryEmbeddingStore<TextSegment> store;
@@ -19,6 +21,8 @@ public class KnowledgeBase {
 
     store.add(embeddingModel.embed(segment1).content(), segment1);
     store.add(embeddingModel.embed(segment2).content(), segment2);
+
+    log.info("Knowledge base initialized with 2 policy documents");
   }
 
   public EmbeddingStore<TextSegment> getStore() {

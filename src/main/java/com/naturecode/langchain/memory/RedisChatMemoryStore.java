@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,9 @@ import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.ToolExecutionResultMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class RedisChatMemoryStore implements ChatMemoryStore {
 
@@ -29,6 +32,7 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
   private final StringRedisTemplate redisTemplate;
   private final ObjectMapper objectMapper;
 
+  @Autowired
   public RedisChatMemoryStore(StringRedisTemplate redisTemplate) {
     this(redisTemplate, new ObjectMapper());
   }
@@ -47,6 +51,7 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
           .map(this::fromRecord)
           .toList();
     } catch (JsonProcessingException | IllegalArgumentException e) {
+      log.warn("Failed to deserialize chat messages for memoryId={}, returning empty list", memoryId, e);
       return new ArrayList<>();
     }
   }

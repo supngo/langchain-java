@@ -12,7 +12,9 @@ import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.rag.query.Query;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @Primary
 public class CachingRetriever implements ContentRetriever {
@@ -32,11 +34,13 @@ public class CachingRetriever implements ContentRetriever {
 
     Cache.ValueWrapper wrapper = cache.get(key);
     if (wrapper != null) {
+      log.debug("RAG cache hit query=\"{}\"", key);
       List<String> texts = (List<String>) wrapper.get();
       return texts.stream().map(t -> Content.from(TextSegment.from(t))).toList();
     }
 
     List<Content> results = delegate.retrieve(query);
+    log.debug("RAG cache miss query=\"{}\" results={}", key, results.size());
     cache.put(key, results.stream().map(c -> c.textSegment().text()).toList());
     return results;
   }
