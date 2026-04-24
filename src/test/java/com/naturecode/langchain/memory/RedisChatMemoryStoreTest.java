@@ -175,6 +175,29 @@ class RedisChatMemoryStoreTest {
     assertThat(store.getMessages("user1")).isEmpty();
   }
 
+  // --- branch: AiMessage with tool requests but no "text" key (text == null short-circuit) ---
+
+  @Test
+  void getMessages_aiMessage_withToolRequestsAndMissingTextKey_yieldsAiMessageWithReqsOnly() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    List<Map<String, String>> toolReqs = List.of(
+        Map.of("id", "call-1", "name", "getClaimStatusById", "arguments", "{}"));
+    Map<String, String> record = new HashMap<>();
+    record.put("type", "AI");
+    record.put("toolRequests", mapper.writeValueAsString(toolReqs));
+    // deliberately omitting "text" key so r.get("text") == null
+    String json = mapper.writeValueAsString(List.of(record));
+    when(valueOps.get("chat:memory:user1")).thenReturn(json);
+
+    List<ChatMessage> result = store.getMessages("user1");
+
+    assertThat(result).hasSize(1);
+    AiMessage message = (AiMessage) result.get(0);
+    assertThat(message.hasToolExecutionRequests()).isTrue();
+    assertThat(message.toolExecutionRequests().get(0).id()).isEqualTo("call-1");
+    assertThat(message.text()).isNull();
+  }
+
   // --- catch: fromRecord AI case — corrupt toolRequests JSON ---
 
   @Test
